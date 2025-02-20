@@ -54,6 +54,9 @@ func (rt *RealTypesMapper) IsInList(typeName string) bool {
 
 func GenerateNewObjectWithConverter[T any](fromObject interface{}, fieldMappings map[string]string, converters map[string]func(interface{}) interface{}) T {
 	var retVal T
+	if converters == nil {
+		converters = GetConverters()
+	}
 	toObject := reflect.New(reflect.TypeOf(retVal)).Elem() // Create a pointer to a non-pointer type instance
 	generateNewObjectBasicInnerLists(fromObject, toObject.Addr().Interface(), fieldMappings, converters)
 	return toObject.Interface().(T) // Return the populated struct
@@ -62,6 +65,9 @@ func GenerateNewObjectWithConverter[T any](fromObject interface{}, fieldMappings
 func GenerateNewObjectsWithConverter[T any, U any](fromObjects []U, fieldMappings map[string]string, converters map[string]func(interface{}) interface{}) []T {
 	var result []T
 
+	if converters == nil {
+		converters = GetConverters()
+	}
 	for _, fromObject := range fromObjects {
 		var newObj T
 		toObject := reflect.New(reflect.TypeOf(newObj)).Elem() // Create a new instance of T
@@ -235,4 +241,37 @@ func resolveNestedFieldWritable(base reflect.Value, fieldPath string) reflect.Va
 		}
 	}
 	return current
+}
+
+func GetConverters() map[string]func(interface{}) interface{} {
+	return map[string]func(interface{}) interface{}{
+		"float64->string": func(value interface{}) interface{} {
+			return fmt.Sprintf("%.2f", value.(float64)) // Format as string with 2 decimal places
+		},
+		"float64->int64": func(value interface{}) interface{} {
+			return int64(value.(float64)) // Convert float64 to int64
+		},
+		"*string->string": func(value interface{}) interface{} {
+			if value == nil {
+				return "" // Return an empty string if the pointer is nil
+			}
+			return *(value.(*string)) // Dereference the pointer
+		},
+		"string->*string": func(value interface{}) interface{} {
+			str := value.(string)
+			return &str // Return a pointer to the string
+		},
+		"*bool->bool": func(value interface{}) interface{} {
+			if value == nil {
+				return false
+			}
+			return *(value.(*bool))
+		},
+		"bool->*bool": func(value interface{}) interface{} {
+			if value == nil {
+				return false
+			}
+			return value.(bool)
+		},
+	}
 }
