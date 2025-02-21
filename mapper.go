@@ -100,7 +100,7 @@ func generateNewObjectBasicInnerLists(fromObject interface{}, toObject interface
 		fromFieldType := fromVal.Type().Field(i)
 		toField := toVal.Elem().FieldByName(fromFieldType.Name)
 
-		fmt.Printf("Processing field: %s\n", fromFieldType.Name)
+		// fmt.Printf("Processing field: %s\n", fromFieldType.Name)
 
 		if fromField.Kind() == reflect.Slice && toField.Kind() == reflect.Slice {
 			// Handle slices
@@ -140,10 +140,10 @@ func generateNewObjectBasicInnerLists(fromObject interface{}, toObject interface
 			converterKey := fromType + "->" + toType
 			if converter, exists := converters[converterKey]; exists {
 				convertedValue := converter(fromField.Interface())
-				fmt.Printf("Converted field: %s, value: %v -> %v\n", fromFieldType.Name, fromField.Interface(), convertedValue)
+				// fmt.Printf("Converted field: %s, value: %v -> %v\n", fromFieldType.Name, fromField.Interface(), convertedValue)
 				toField.Set(reflect.ValueOf(convertedValue))
 			} else if fromField.Type() == toField.Type() {
-				fmt.Printf("Directly set field: %s, value: %v\n", fromFieldType.Name, fromField.Interface())
+				// fmt.Printf("Directly set field: %s, value: %v\n", fromFieldType.Name, fromField.Interface())
 				toField.Set(fromField)
 			}
 		}
@@ -151,17 +151,17 @@ func generateNewObjectBasicInnerLists(fromObject interface{}, toObject interface
 
 	// Copy fields using mappings (supports nested paths)
 	for fromFieldPath, toFieldName := range fieldMappings {
-		fmt.Printf("Attempting to map: %s -> %s\n", fromFieldPath, toFieldName)
+		// fmt.Printf("Attempting to map: %s -> %s\n", fromFieldPath, toFieldName)
 
 		fromField := resolveNestedField(fromVal, fromFieldPath)
 		if !fromField.IsValid() {
-			fmt.Printf("Mapped field not found: %s\n", fromFieldPath)
+			// fmt.Printf("Mapped field not found: %s\n", fromFieldPath)
 			continue
 		}
 
 		toField := resolveNestedFieldWritable(toVal.Elem(), toFieldName)
 		if !toField.IsValid() {
-			fmt.Printf("Target field invalid or cannot be set: %s\n", toFieldName)
+			// fmt.Printf("Target field invalid or cannot be set: %s\n", toFieldName)
 			continue
 		}
 
@@ -171,10 +171,10 @@ func generateNewObjectBasicInnerLists(fromObject interface{}, toObject interface
 		converterKey := fromType + "->" + toType
 		if converter, exists := converters[converterKey]; exists {
 			convertedValue := converter(fromField.Interface())
-			fmt.Printf("Mapped and converted field: %s -> %s, value: %v -> %v\n", fromFieldPath, toFieldName, fromField.Interface(), convertedValue)
+			// fmt.Printf("Mapped and converted field: %s -> %s, value: %v -> %v\n", fromFieldPath, toFieldName, fromField.Interface(), convertedValue)
 			toField.Set(reflect.ValueOf(convertedValue))
 		} else if fromField.Type() == toField.Type() {
-			fmt.Printf("Mapped field: %s -> %s, value: %v\n", fromFieldPath, toFieldName, fromField.Interface())
+			// fmt.Printf("Mapped field: %s -> %s, value: %v\n", fromFieldPath, toFieldName, fromField.Interface())
 			toField.Set(fromField)
 		}
 	}
@@ -209,18 +209,18 @@ func resolveNestedFieldWritable(base reflect.Value, fieldPath string) reflect.Va
 	parts := strings.Split(fieldPath, ".")
 	current := base
 
-	for i, part := range parts {
+	for _, part := range parts {
 		if current.Kind() == reflect.Ptr {
 			if current.IsNil() {
 				current.Set(reflect.New(current.Type().Elem()))
-				fmt.Printf("Initialized pointer: %s\n", strings.Join(parts[:i+1], "."))
+				// fmt.Printf("Initialized pointer: %s\n", strings.Join(parts[:i+1], "."))
 			}
 			current = current.Elem()
 		}
 		if current.Kind() == reflect.Slice {
 			if current.IsNil() {
 				current.Set(reflect.MakeSlice(current.Type(), 0, 1))
-				fmt.Printf("Initialized slice: %s\n", strings.Join(parts[:i+1], "."))
+				// fmt.Printf("Initialized slice: %s\n", strings.Join(parts[:i+1], "."))
 			}
 			if current.Len() == 0 {
 				// Create a single element for mapping
@@ -232,11 +232,11 @@ func resolveNestedFieldWritable(base reflect.Value, fieldPath string) reflect.Va
 		if current.Kind() == reflect.Struct {
 			current = current.FieldByName(part)
 			if !current.IsValid() {
-				fmt.Printf("Field not found: %s\n", part)
+				// fmt.Printf("Field not found: %s\n", part)
 				return reflect.Value{}
 			}
 		} else {
-			fmt.Printf("Failed to resolve: %s\n", strings.Join(parts[:i+1], "."))
+			// fmt.Printf("Failed to resolve: %s\n", strings.Join(parts[:i+1], "."))
 			return reflect.Value{}
 		}
 	}
