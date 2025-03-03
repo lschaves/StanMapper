@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -290,15 +289,5 @@ func GetConverters() map[string]func(interface{}) interface{} {
 		"uuid.UUID->string": func(value interface{}) interface{} {
 			return value.(uuid.UUID).String()
 		},
-		"CustomTime->time.Time": func(value interface{}) interface{} {
-			return value.(CustomTime).Time
-		},
-		"CustomTime->CustomTime": func(value interface{}) interface{} {
-			return value.(CustomTime)
-		},
 	}
-}
-
-type CustomTime struct {
-	time.Time
 }
