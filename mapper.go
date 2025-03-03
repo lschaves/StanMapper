@@ -59,6 +59,10 @@ func GenerateNewObjectWithConverter[T any](fromObject interface{}, fieldMappings
 	if converters == nil {
 		converters = GetConverters()
 	}
+	if fieldMappings == nil {
+		fieldMappings = map[string]string{}
+	}
+
 	toObject := reflect.New(reflect.TypeOf(retVal)).Elem() // Create a pointer to a non-pointer type instance
 	generateNewObjectBasicInnerLists(fromObject, toObject.Addr().Interface(), fieldMappings, converters)
 	return toObject.Interface().(T) // Return the populated struct
@@ -70,6 +74,10 @@ func GenerateNewObjectsWithConverter[T any, U any](fromObjects []U, fieldMapping
 	if converters == nil {
 		converters = GetConverters()
 	}
+	if fieldMappings == nil {
+		fieldMappings = map[string]string{}
+	}
+
 	for _, fromObject := range fromObjects {
 		var newObj T
 		toObject := reflect.New(reflect.TypeOf(newObj)).Elem() // Create a new instance of T
