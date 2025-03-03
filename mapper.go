@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 type RealTypesMapper struct {
@@ -273,6 +275,9 @@ func GetConverters() map[string]func(interface{}) interface{} {
 			}
 			boolVal := value.(bool)
 			return &boolVal
+		},
+		"uuid.UUID->string": func(value interface{}) interface{} {
+			return value.(uuid.UUID).String()
 		},
 	}
 }
