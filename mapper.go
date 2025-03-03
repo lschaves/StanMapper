@@ -271,7 +271,8 @@ func GetConverters() map[string]func(interface{}) interface{} {
 			if value == nil {
 				return false
 			}
-			return value.(bool)
+			boolVal := value.(bool)
+			return &boolVal
 		},
 	}
 }
