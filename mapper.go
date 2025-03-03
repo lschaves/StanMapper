@@ -40,6 +40,7 @@ func NewRealTypes() *RealTypesMapper {
 			"*int16",         // Int16
 			"*bool",          // Boolean
 			"*time.Time",     // Date/DateTime
+			"CustomTime",     // CustomTime
 		},
 	}
 }
