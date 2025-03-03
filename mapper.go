@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -16,33 +17,32 @@ type RealTypesMapper struct {
 func NewRealTypes() *RealTypesMapper {
 	return &RealTypesMapper{
 		RealTypesNames: []string{
-			"string",          // String
-			"uint8",           // Byte
-			"int32",           // Int32
-			"int64",           // Int64
-			"int8",            // SByte
-			"uuid.UUID",       // Guid
-			"float64",         // Decimal/Double
-			"int",             // Integer
-			"int16",           // Int16
-			"bool",            // Boolean
-			"time.Time",       // Date/DateTime
-			"sql.NullInt64",   // Nullable Int64 (similar to Nullable in C#)
-			"sql.NullString",  // Nullable String
-			"*string",         // String pointer
-			"*uint8",          // Byte
-			"*int32",          // Int32
-			"*int64",          // Int64
-			"*int8",           // SByte
-			"*uuid.UUID",      // Guid
-			"*float64",        // Decimal/Double
-			"*int",            // Integer
-			"*int16",          // Int16
-			"*bool",           // Boolean
-			"*time.Time",      // Date/DateTime
-			"CustomTime",      // CustomTime
-			"CustomTime.Time", // CustomTime
-			"time",            // time
+			"string",         // String
+			"uint8",          // Byte
+			"int32",          // Int32
+			"int64",          // Int64
+			"int8",           // SByte
+			"uuid.UUID",      // Guid
+			"float64",        // Decimal/Double
+			"int",            // Integer
+			"int16",          // Int16
+			"bool",           // Boolean
+			"time.Time",      // Date/DateTime
+			"sql.NullInt64",  // Nullable Int64 (similar to Nullable in C#)
+			"sql.NullString", // Nullable String
+			"*string",        // String pointer
+			"*uint8",         // Byte
+			"*int32",         // Int32
+			"*int64",         // Int64
+			"*int8",          // SByte
+			"*uuid.UUID",     // Guid
+			"*float64",       // Decimal/Double
+			"*int",           // Integer
+			"*int16",         // Int16
+			"*bool",          // Boolean
+			"*time.Time",     // Date/DateTime
+			"CustomTime",     // CustomTime
+			"*CustomTime",    // CustomTime Pointer
 		},
 	}
 }
@@ -290,5 +290,15 @@ func GetConverters() map[string]func(interface{}) interface{} {
 		"uuid.UUID->string": func(value interface{}) interface{} {
 			return value.(uuid.UUID).String()
 		},
+		"CustomTime->time.Time": func(value interface{}) interface{} {
+			return value.(CustomTime).Time
+		},
+		"CustomTime->CustomTime": func(value interface{}) interface{} {
+			return value.(CustomTime)
+		},
 	}
+}
+
+type CustomTime struct {
+	time.Time
 }
