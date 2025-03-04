@@ -258,150 +258,194 @@ func resolveNestedFieldWritable(base reflect.Value, fieldPath string) reflect.Va
 
 func GetConverters() map[string]func(interface{}) interface{} {
 	return map[string]func(interface{}) interface{}{
+		// float64 Conversions
 		"float64->string": func(value interface{}) interface{} {
-			return fmt.Sprintf("%.2f", value.(float64))
+			if v, ok := value.(float64); ok {
+				return fmt.Sprintf("%.2f", v)
+			}
+			return "0.00"
 		},
 		"float64->*string": func(value interface{}) interface{} {
-			retVal := fmt.Sprintf("%.2f", value.(float64))
-			return &retVal
+			if v, ok := value.(float64); ok {
+				retVal := fmt.Sprintf("%.2f", v)
+				return &retVal
+			}
+			return nil
 		},
 		"float64->int64": func(value interface{}) interface{} {
-			return int64(value.(float64))
+			if v, ok := value.(float64); ok {
+				return int64(v)
+			}
+			return int64(0)
 		},
 		"float64->*int64": func(value interface{}) interface{} {
-			retVal := int64(value.(float64))
-			return &retVal
-		},
-		"*float64->int64": func(value interface{}) interface{} {
-			if value == nil {
-				return 0
+			if v, ok := value.(float64); ok {
+				retVal := int64(v)
+				return &retVal
 			}
-			return int64(*value.(*float64))
-		},
-		"*float64->string": func(value interface{}) interface{} {
-			if value == nil {
-				return "0.0"
-			}
-			return fmt.Sprintf("%.2f", *(value.(*float64)))
-		},
-		"*float64->float64": func(value interface{}) interface{} {
-			if value == nil {
-				return 0.0
-			}
-			return *(value.(*float64))
+			return nil
 		},
 		"float64->*float64": func(value interface{}) interface{} {
-			retVal := value.(float64)
-			return &retVal
-		},
-		"*string->string": func(value interface{}) interface{} {
-			if value == nil {
-				return ""
+			if v, ok := value.(float64); ok {
+				return &v
 			}
-			return *(value.(*string))
+			return nil
 		},
+
+		// *float64 Conversions
+		"*float64->int64": func(value interface{}) interface{} {
+			if v, ok := value.(*float64); ok && v != nil {
+				return int64(*v)
+			}
+			return int64(0)
+		},
+		"*float64->string": func(value interface{}) interface{} {
+			if v, ok := value.(*float64); ok && v != nil {
+				return fmt.Sprintf("%.2f", *v)
+			}
+			return "0.00"
+		},
+		"*float64->float64": func(value interface{}) interface{} {
+			if v, ok := value.(*float64); ok && v != nil {
+				return *v
+			}
+			return float64(0.0)
+		},
+
+		// string Conversions
 		"string->*string": func(value interface{}) interface{} {
-			retVal := value.(string)
-			return &retVal
+			if v, ok := value.(string); ok {
+				return &v
+			}
+			return nil
 		},
 		"string->float64": func(value interface{}) interface{} {
-			retVal, err := strconv.ParseFloat(value.(string), 64)
-			if err != nil {
-				return 0.0
+			if v, ok := value.(string); ok {
+				if retVal, err := strconv.ParseFloat(v, 64); err == nil {
+					return retVal
+				}
 			}
-			return retVal
+			return float64(0.0)
 		},
 		"string->*float64": func(value interface{}) interface{} {
-			retVal, err := strconv.ParseFloat(value.(string), 64)
-			if err != nil {
-				return nil
+			if v, ok := value.(string); ok {
+				if retVal, err := strconv.ParseFloat(v, 64); err == nil {
+					return &retVal
+				}
 			}
-			return &retVal
+			return nil
 		},
 		"string->int64": func(value interface{}) interface{} {
-			retVal, err := strconv.ParseInt(value.(string), 10, 64)
-			if err != nil {
-				return 0
+			if v, ok := value.(string); ok {
+				if retVal, err := strconv.ParseInt(v, 10, 64); err == nil {
+					return retVal
+				}
 			}
-			return retVal
+			return int64(0)
 		},
 		"string->*int64": func(value interface{}) interface{} {
-			retVal, err := strconv.ParseInt(value.(string), 10, 64)
-			if err != nil {
-				return nil
+			if v, ok := value.(string); ok {
+				if retVal, err := strconv.ParseInt(v, 10, 64); err == nil {
+					return &retVal
+				}
 			}
-			return &retVal
+			return nil
 		},
+
+		// UUID Conversions
 		"string->uuid.UUID": func(value interface{}) interface{} {
-			retVal, err := uuid.Parse(value.(string))
-			if err != nil {
-				return uuid.Nil
+			if v, ok := value.(string); ok {
+				if retVal, err := uuid.Parse(v); err == nil {
+					return retVal
+				}
 			}
-			return retVal
+			return uuid.Nil
 		},
 		"string->*uuid.UUID": func(value interface{}) interface{} {
-			retVal, err := uuid.Parse(value.(string))
-			if err != nil {
-				return uuid.Nil
+			if v, ok := value.(string); ok {
+				if retVal, err := uuid.Parse(v); err == nil {
+					return &retVal
+				}
 			}
-			return &retVal
-		},
-		"*bool->bool": func(value interface{}) interface{} {
-			if value == nil {
-				return false
-			}
-			return *(value.(*bool))
-		},
-		"bool->*bool": func(value interface{}) interface{} {
-			if value == nil {
-				return false
-			}
-			boolVal := value.(bool)
-			return &boolVal
+			return nil
 		},
 		"uuid.UUID->string": func(value interface{}) interface{} {
-			return value.(uuid.UUID).String()
+			if v, ok := value.(uuid.UUID); ok {
+				return v.String()
+			}
+			return ""
 		},
 		"uuid.UUID->*string": func(value interface{}) interface{} {
-			retVal := value.(uuid.UUID).String()
-			return &retVal
+			if v, ok := value.(uuid.UUID); ok {
+				retVal := v.String()
+				return &retVal
+			}
+			return nil
 		},
+
+		// int64 Conversions
 		"int64->string": func(value interface{}) interface{} {
-			return strconv.FormatInt(value.(int64), 10)
+			if v, ok := value.(int64); ok {
+				return strconv.FormatInt(v, 10)
+			}
+			return "0"
 		},
 		"int64->*string": func(value interface{}) interface{} {
-			retVal := strconv.FormatInt(value.(int64), 10)
-			return &retVal
+			if v, ok := value.(int64); ok {
+				retVal := strconv.FormatInt(v, 10)
+				return &retVal
+			}
+			return nil
 		},
 		"int64->float64": func(value interface{}) interface{} {
-			return float64(value.(int64))
+			if v, ok := value.(int64); ok {
+				return float64(v)
+			}
+			return float64(0.0)
 		},
 		"int64->*float64": func(value interface{}) interface{} {
-			retVal := float64(value.(int64))
-			return &retVal
-		},
-		"*int64->string": func(value interface{}) interface{} {
-			if value == nil {
-				return "0"
+			if v, ok := value.(int64); ok {
+				retVal := float64(v)
+				return &retVal
 			}
-			return strconv.FormatInt(*value.(*int64), 10)
+			return nil
+		},
+
+		// *int64 Conversions
+		"*int64->string": func(value interface{}) interface{} {
+			if v, ok := value.(*int64); ok && v != nil {
+				return strconv.FormatInt(*v, 10)
+			}
+			return "0"
 		},
 		"*int64->*string": func(value interface{}) interface{} {
-			if value == nil {
-				return "0"
+			if v, ok := value.(*int64); ok && v != nil {
+				retVal := strconv.FormatInt(*v, 10)
+				return &retVal
 			}
-			retVal := strconv.FormatInt(*value.(*int64), 10)
-			return &retVal
+			return nil
 		},
 		"*int64->*float64": func(value interface{}) interface{} {
-			var retVal float64
-			if value == nil {
-				retVal = 0.0
-			} else {
-				retVal = float64(*value.(*int64))
+			if v, ok := value.(*int64); ok && v != nil {
+				retVal := float64(*v)
+				return &retVal
 			}
+			return nil
+		},
 
-			return &retVal
+		// bool Conversions
+		"*bool->bool": func(value interface{}) interface{} {
+			if v, ok := value.(*bool); ok && v != nil {
+				return *v
+			}
+			return false
+		},
+		"bool->*bool": func(value interface{}) interface{} {
+			if v, ok := value.(bool); ok {
+				return &v
+			}
+			return nil
 		},
 	}
 }
+
