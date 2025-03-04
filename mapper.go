@@ -3,6 +3,7 @@ package StanMapper
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
@@ -258,20 +259,92 @@ func resolveNestedFieldWritable(base reflect.Value, fieldPath string) reflect.Va
 func GetConverters() map[string]func(interface{}) interface{} {
 	return map[string]func(interface{}) interface{}{
 		"float64->string": func(value interface{}) interface{} {
-			return fmt.Sprintf("%.2f", value.(float64)) // Format as string with 2 decimal places
+			return fmt.Sprintf("%.2f", value.(float64))
+		},
+		"float64->*string": func(value interface{}) interface{} {
+			retVal := fmt.Sprintf("%.2f", value.(float64))
+			return &retVal
 		},
 		"float64->int64": func(value interface{}) interface{} {
-			return int64(value.(float64)) // Convert float64 to int64
+			return int64(value.(float64))
+		},
+		"float64->*int64": func(value interface{}) interface{} {
+			retVal := int64(value.(float64))
+			return &retVal
+		},
+		"*float64->int64": func(value interface{}) interface{} {
+			if value == nil {
+				return 0
+			}
+			return int64(*value.(*float64))
+		},
+		"*float64->string": func(value interface{}) interface{} {
+			if value == nil {
+				return "0.0"
+			}
+			return fmt.Sprintf("%.2f", *(value.(*float64)))
+		},
+		"*float64->float64": func(value interface{}) interface{} {
+			if value == nil {
+				return 0.0
+			}
+			return *(value.(*float64))
+		},
+		"float64->*float64": func(value interface{}) interface{} {
+			retVal := value.(float64)
+			return &retVal
 		},
 		"*string->string": func(value interface{}) interface{} {
 			if value == nil {
-				return "" // Return an empty string if the pointer is nil
+				return ""
 			}
-			return *(value.(*string)) // Dereference the pointer
+			return *(value.(*string))
 		},
 		"string->*string": func(value interface{}) interface{} {
-			str := value.(string)
-			return &str // Return a pointer to the string
+			retVal := value.(string)
+			return &retVal
+		},
+		"string->float64": func(value interface{}) interface{} {
+			retVal, err := strconv.ParseFloat(value.(string), 64)
+			if err != nil {
+				return 0.0
+			}
+			return retVal
+		},
+		"string->*float64": func(value interface{}) interface{} {
+			retVal, err := strconv.ParseFloat(value.(string), 64)
+			if err != nil {
+				return nil
+			}
+			return &retVal
+		},
+		"string->int64": func(value interface{}) interface{} {
+			retVal, err := strconv.ParseInt(value.(string), 10, 64)
+			if err != nil {
+				return 0
+			}
+			return retVal
+		},
+		"string->*int64": func(value interface{}) interface{} {
+			retVal, err := strconv.ParseInt(value.(string), 10, 64)
+			if err != nil {
+				return nil
+			}
+			return &retVal
+		},
+		"string->uuid.UUID": func(value interface{}) interface{} {
+			retVal, err := uuid.Parse(value.(string))
+			if err != nil {
+				return uuid.Nil
+			}
+			return retVal
+		},
+		"string->*uuid.UUID": func(value interface{}) interface{} {
+			retVal, err := uuid.Parse(value.(string))
+			if err != nil {
+				return uuid.Nil
+			}
+			return &retVal
 		},
 		"*bool->bool": func(value interface{}) interface{} {
 			if value == nil {
@@ -288,6 +361,47 @@ func GetConverters() map[string]func(interface{}) interface{} {
 		},
 		"uuid.UUID->string": func(value interface{}) interface{} {
 			return value.(uuid.UUID).String()
+		},
+		"uuid.UUID->*string": func(value interface{}) interface{} {
+			retVal := value.(uuid.UUID).String()
+			return &retVal
+		},
+		"int64->string": func(value interface{}) interface{} {
+			return strconv.FormatInt(value.(int64), 10)
+		},
+		"int64->*string": func(value interface{}) interface{} {
+			retVal := strconv.FormatInt(value.(int64), 10)
+			return &retVal
+		},
+		"int64->float64": func(value interface{}) interface{} {
+			return float64(value.(int64))
+		},
+		"int64->*float64": func(value interface{}) interface{} {
+			retVal := float64(value.(int64))
+			return &retVal
+		},
+		"*int64->string": func(value interface{}) interface{} {
+			if value == nil {
+				return "0"
+			}
+			return strconv.FormatInt(*value.(*int64), 10)
+		},
+		"*int64->*string": func(value interface{}) interface{} {
+			if value == nil {
+				return "0"
+			}
+			retVal := strconv.FormatInt(*value.(*int64), 10)
+			return &retVal
+		},
+		"*int64->*float64": func(value interface{}) interface{} {
+			var retVal float64
+			if value == nil {
+				retVal = 0.0
+			} else {
+				retVal = float64(*value.(*int64))
+			}
+
+			return &retVal
 		},
 	}
 }
